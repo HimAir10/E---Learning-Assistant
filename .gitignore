@@ -57,3 +57,7 @@ uploaded_docs/
 *.tmp
 tmp/
 temp/
+
+# Markdown files (except README)
+*.md
+!README.md
