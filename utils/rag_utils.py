@@ -1,10 +1,10 @@
 import os
 import sys
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain_community.vectorstores import Chroma
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 # Add parent directory to path for imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
