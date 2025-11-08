@@ -26,7 +26,7 @@ def search_web(query, num_results=MAX_SEARCH_RESULTS):
         RuntimeError: If search fails
     """
     try:
-        if not SERPER_API_KEY:
+        if not SERPER_API_KEY or SERPER_API_KEY == "":
             raise ValueError("Serper API key not found. Please set SERPER_API_KEY in config.py or environment variables.")
         
         url = "https://google.serper.dev/search"
@@ -41,11 +41,24 @@ def search_web(query, num_results=MAX_SEARCH_RESULTS):
             "Content-Type": "application/json"
         }
         
-        response = requests.post(url, json=payload, headers=headers)
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        
+        # Check response status
+        if response.status_code == 400:
+            raise RuntimeError(f"Invalid request to Serper API. Please check your API key and query format.")
+        elif response.status_code == 403:
+            raise RuntimeError(f"Serper API key is invalid or unauthorized.")
+        elif response.status_code == 429:
+            raise RuntimeError(f"Serper API rate limit exceeded. Please try again later.")
+        
         response.raise_for_status()
         
         return response.json()
     
+    except requests.exceptions.Timeout:
+        raise RuntimeError(f"Web search request timed out. Please try again.")
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Web search failed: {str(e)}")
     except Exception as e:
         raise RuntimeError(f"Web search failed: {str(e)}")
 
@@ -92,19 +105,21 @@ def get_search_context(query, num_results=MAX_SEARCH_RESULTS):
         num_results (int): Number of results to retrieve
     
     Returns:
-        str: Formatted search context
-    
-    Raises:
-        RuntimeError: If search or formatting fails
+        str: Formatted search context or error message
     """
     try:
+        # Check if API key is available
+        if not SERPER_API_KEY or SERPER_API_KEY == "":
+            return "Web search unavailable: Serper API key not configured."
+        
         search_results = search_web(query, num_results)
         formatted_context = format_search_results(search_results)
         
         return formatted_context
     
     except Exception as e:
-        raise RuntimeError(f"Failed to get search context: {str(e)}")
+        # Return a user-friendly message instead of crashing
+        return f"Web search unavailable: {str(e)}"
 
 
 def should_use_web_search(query, threshold_keywords=None):

@@ -2,11 +2,12 @@ import streamlit as st
 import os
 import sys
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from PIL import Image
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from models.llm import get_chat_model
+from models.llm import get_chat_model, get_vision_response
 from models.embeddings import get_embedding_model
 from utils.rag_utils import (
     process_uploaded_file, 
@@ -16,6 +17,7 @@ from utils.rag_utils import (
     format_docs_for_context
 )
 from utils.web_search import get_search_context, should_use_web_search
+from utils.image_utils import prepare_image_for_gemini
 from config.config import (
     DEFAULT_SYSTEM_PROMPT,
     CONCISE_INSTRUCTION,
@@ -24,6 +26,8 @@ from config.config import (
     DETAILED_MAX_TOKENS,
     SUPPORTED_FILE_TYPES,
     MAX_FILE_SIZE_MB,
+    SUPPORTED_IMAGE_TYPES,
+    MAX_IMAGE_SIZE_MB,
     GOOGLE_API_KEY
 )
 
@@ -154,16 +158,22 @@ def instructions_page():
     - The chatbot extracts and uses information from your documents
     - Perfect for studying from textbooks, notes, and research papers
     
-    ### 2. 🌐 Live Web Search
+    ### 2. 🖼️ Image Analysis & Text Extraction
+    - Upload images (PNG, JPG, JPEG, WEBP)
+    - Extract text from handwritten notes, diagrams, or screenshots
+    - Ask questions about visual content
+    - Perfect for analyzing charts, graphs, and educational diagrams
+    
+    ### 3. 🌐 Live Web Search
     - Automatically searches the web for current information
     - Triggered by keywords like "latest", "recent", "current", etc.
     - Or manually enable in the sidebar
     
-    ### 3. ⚡ Response Modes
+    ### 4. ⚡ Response Modes
     - **Concise Mode**: Brief, to-the-point answers (2-3 sentences)
     - **Detailed Mode**: Comprehensive explanations with examples
     
-    ### 4. 🤖 Multiple AI Models
+    ### 5. 🤖 Multiple AI Models
     - **Gemini 2.0 Flash** (Primary): Fast, intelligent, and efficient
     - **OpenAI GPT**: Alternative high-quality model
     - **Groq Llama**: Fast open-source alternative
@@ -171,7 +181,9 @@ def instructions_page():
     ## 📖 How to Use
     
     1. **Go to the Chat page** using the sidebar navigation
-    2. **Upload study materials** (optional) for RAG functionality
+    2. **Upload study materials** (optional):
+       - Documents (PDF, TXT, DOCX, MD) for RAG functionality
+       - Images (PNG, JPG, JPEG, WEBP) for visual analysis
     3. **Choose response mode**: Concise or Detailed
     4. **Enable web search** if you need current information
     5. **Start asking questions** about your studies!
@@ -180,8 +192,10 @@ def instructions_page():
     
     - *"Explain quantum mechanics in simple terms"* (Detailed mode)
     - *"What are the key points of photosynthesis?"* (Concise mode)
-    - *"Latest developments in AI research"* (Auto web search)
+    - *"Latest developments in AI"* (Auto web search)
     - Upload a PDF textbook and ask *"Summarize chapter 5"* (RAG)
+    - Upload an image of handwritten notes and ask *"What does this say?"* (Image analysis)
+    - Upload a diagram and ask *"Explain this flowchart"* (Image understanding)
     
     ## 🛠 Troubleshooting
     
@@ -305,15 +319,64 @@ def chat_page():
     # Display chat messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
+            # Display image if present in message
+            if "image" in message and message["image"] is not None:
+                st.image(message["image"], caption="Uploaded Image", width=300)
             st.markdown(message["content"])
     
-    # Chat input
-    if prompt := st.chat_input("Ask me anything about your studies..."):
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
+    # Show attached image preview above chat input
+    if "current_image" in st.session_state:
+        col_preview1, col_preview2 = st.columns([5, 1])
+        with col_preview1:
+            st.info(f"🖼️ Image attached: {st.session_state.current_image['filename']}")
+        with col_preview2:
+            if st.button("❌", help="Remove attached image", key="remove_img"):
+                del st.session_state.current_image
+                if "last_uploaded_image" in st.session_state:
+                    del st.session_state.last_uploaded_image
+                st.rerun()
+    
+    # Compact image upload button (ChatGPT style)
+    uploaded_image = st.file_uploader(
+        "📎 Attach Image",
+        type=SUPPORTED_IMAGE_TYPES,
+        help="Upload an image (PNG, JPG, JPEG, WEBP)",
+        key="chat_image_uploader",
+        label_visibility="visible"
+    )
+    
+    # Process uploaded image
+    if uploaded_image:
+        if "last_uploaded_image" not in st.session_state or st.session_state.get("last_uploaded_image") != uploaded_image.name:
+            try:
+                image_data = prepare_image_for_gemini(uploaded_image)
+                st.session_state.current_image = image_data
+                st.session_state.last_uploaded_image = uploaded_image.name
+                st.success(f"✅ {uploaded_image.name} attached")
+            except Exception as e:
+                st.error(f"❌ {str(e)}")
+    
+    # Chat input (original position)
+    prompt = st.chat_input("Ask me anything about your studies...")
+    
+    # Process chat input
+    if prompt:
+        # Check if there's an attached image
+        has_image = "current_image" in st.session_state
+        current_image_data = st.session_state.get("current_image") if has_image else None
+        
+        # Add user message to chat history (with image if attached)
+        user_message = {
+            "role": "user", 
+            "content": prompt,
+            "image": current_image_data["image"] if has_image else None
+        }
+        st.session_state.messages.append(user_message)
         
         # Display user message
         with st.chat_message("user"):
+            if has_image:
+                st.image(current_image_data["image"], caption="Uploaded Image", width=300)
             st.markdown(prompt)
         
         # Check if web search should be auto-enabled
@@ -326,6 +389,8 @@ def chat_page():
             features_used.append("📚 RAG")
         if final_use_web_search:
             features_used.append("🌐 Web Search")
+        if has_image:
+            features_used.append("🖼️ Image Analysis")
         if response_mode == "Concise":
             features_used.append("⚡ Concise Mode")
         else:
@@ -337,18 +402,47 @@ def chat_page():
         # Generate and display bot response
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
+                # Build combined prompt with image understanding, RAG, and web search
+                combined_prompt = prompt
+                
+                # Add image analysis if present
+                if has_image:
+                    try:
+                        import base64
+                        image_bytes = current_image_data["bytes"]
+                        image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+                        image_url = f"data:image/jpeg;base64,{image_base64}"
+                        
+                        # Get image description/understanding
+                        image_analysis = get_vision_response(
+                            image_url, 
+                            "Describe this image in detail, focusing on any text, diagrams, or educational content."
+                        )
+                        
+                        # Add image context to the prompt
+                        combined_prompt = f"[Image Content]: {image_analysis}\n\n[User Question]: {prompt}"
+                    except Exception as e:
+                        st.warning(f"Image analysis failed: {str(e)}")
+                
+                # Get response with RAG and web search
                 response = get_chat_response(
                     chat_model=chat_model,
-                    messages=st.session_state.messages,
+                    messages=st.session_state.messages[:-1],  # Exclude current message
                     system_prompt=system_prompt,
                     use_rag=use_rag,
                     use_web_search=final_use_web_search,
-                    query=prompt
+                    query=combined_prompt
                 )
                 st.markdown(response)
         
         # Add bot response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append({"role": "assistant", "content": response, "image": None})
+        
+        # Clear attached image after sending
+        if has_image:
+            del st.session_state.current_image
+            if "last_uploaded_image" in st.session_state:
+                del st.session_state.last_uploaded_image
 
 def main():
     st.set_page_config(

@@ -57,6 +57,11 @@ MAX_SEARCH_RESULTS = 5
 SUPPORTED_FILE_TYPES = ["pdf", "txt", "docx", "md"]
 MAX_FILE_SIZE_MB = 10
 
+# Image Upload Settings
+SUPPORTED_IMAGE_TYPES = ["png", "jpg", "jpeg", "webp"]
+MAX_IMAGE_SIZE_MB = 5
+IMAGE_MAX_DIMENSIONS = (1024, 1024)  # Max width and height
+
 # Vector Store Settings
 VECTOR_STORE_PATH = "vector_store"
 PERSIST_DIRECTORY = "./chroma_db"

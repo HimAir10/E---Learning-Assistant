@@ -21,6 +21,9 @@ pypdf
 python-docx
 docx2txt
 
+# Image Processing
+Pillow
+
 # Web Search
 requests
 

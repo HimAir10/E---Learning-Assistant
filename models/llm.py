@@ -1,9 +1,11 @@
 import os
 import sys
+from PIL import Image
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
+from langchain_core.messages import HumanMessage
 
 # Add parent directory to path for imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -163,3 +165,48 @@ def get_chat_model(provider="gemini", model_name=None, temperature=0.7, max_toke
 def get_chatgroq_model():
     """Legacy function for backward compatibility"""
     return get_groq_model()
+
+
+def get_vision_response(image_data, question, model_name="gemini-2.0-flash"):
+    """
+    Get response from Gemini Vision model for image analysis
+    
+    Args:
+        image_data: PIL Image object or image bytes
+        question (str): Question about the image
+        model_name (str): Gemini model with vision capabilities
+    
+    Returns:
+        str: Model response about the image
+    
+    Raises:
+        RuntimeError: If vision model fails
+    """
+    try:
+        if not GOOGLE_API_KEY:
+            raise ValueError("Google API key not found for vision model")
+        
+        # Initialize Gemini model with vision support
+        vision_model = ChatGoogleGenerativeAI(
+            model=model_name,
+            google_api_key=GOOGLE_API_KEY,
+            temperature=0.4
+        )
+        
+        # Prepare message with image
+        message = HumanMessage(
+            content=[
+                {"type": "text", "text": question},
+                {
+                    "type": "image_url",
+                    "image_url": image_data
+                }
+            ]
+        )
+        
+        # Get response
+        response = vision_model.invoke([message])
+        return response.content
+    
+    except Exception as e:
+        raise RuntimeError(f"Failed to get vision response: {str(e)}")

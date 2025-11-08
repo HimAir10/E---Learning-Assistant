@@ -11,29 +11,37 @@ Transform your study materials into an interactive knowledge base:
 - Ask questions and get answers directly from your documents
 - Find relevant information across multiple uploaded files instantly
 
-### 2. **Live Web Search**
+### 2. **Image Analysis & Text Extraction**
+Unlock visual learning with AI-powered image understanding:
+- Upload images in multiple formats (PNG, JPG, JPEG, WEBP)
+- Extract text from handwritten notes, textbook pages, or screenshots
+- Analyze diagrams, charts, graphs, and educational illustrations
+- Ask questions about visual content and get detailed explanations
+- Perfect for studying from photos of whiteboards, handwritten solutions, or complex diagrams
+
+### 3. **Live Web Search**
 Stay updated with the latest information:
 - Access real-time information from the internet
 - Perfect for current events, recent research, and trending topics
 - Automatically suggests web search when queries need fresh data
 - Get answers with source citations for verification
 
-### 3. **Adaptive Response Modes**
+### 4. **Adaptive Response Modes**
 Choose how detailed you want your answers:
 - **Concise Mode**: Quick, focused answers perfect for rapid review
 - **Detailed Mode**: In-depth explanations with examples and context
 - Switch modes anytime based on your learning needs
 
-### 4. **Multi-Model Support**
+### 5. **Multi-Model Support**
 Flexibility to choose different AI providers:
 - Primary model for fast, accurate responses
 - Alternative models for specialized tasks
 - Seamless switching between providers
 
-### 5. **Intuitive Interface**
+### 6. **Intuitive Interface**
 Built for ease of use:
 - Clean, distraction-free chat interface
-- Simple document upload and management
+- Simple document and image upload
 - Easy-to-access controls and settings
 - Mobile-friendly responsive design
 
@@ -44,11 +52,12 @@ AI_UseCase/
 ├── config/
 │   └── config.py              # API keys and settings
 ├── models/
-│   ├── llm.py                 # LLM model initialization
+│   ├── llm.py                 # LLM model initialization & vision
 │   └── embeddings.py          # RAG embedding models
 ├── utils/
 │   ├── rag_utils.py           # RAG utility functions
-│   └── web_search.py          # Web search functionality
+│   ├── web_search.py          # Web search functionality
+│   └── image_utils.py         # Image processing utilities
 ├── app.py                     # Main Streamlit UI
 ├── requirements.txt           # Python dependencies
 └── README.md                  # This file
@@ -125,10 +134,9 @@ The app will open in your browser at `http://localhost:8501`
    - Choose response mode (Concise/Detailed)
    - Select AI model provider
    - Enable/disable features
-3. **Upload Documents** (Optional):
-   - Click "Upload study materials"
-   - Select PDF, TXT, DOCX, or MD files
-   - Click "Process Document"
+3. **Upload Materials** (Optional):
+   - **Documents**: Click "Upload study materials", select PDF, TXT, DOCX, or MD files, then click "Process Document"
+   - **Images**: Click "Upload image for analysis", select PNG, JPG, JPEG, or WEBP files
 4. **Start Chatting**:
    - Type your questions in the chat input
    - Get intelligent responses with context
@@ -139,6 +147,12 @@ The app will open in your browser at `http://localhost:8501`
 - "Summarize chapter 3"
 - "Explain the key concepts in this document"
 - "What does the author say about quantum mechanics?"
+
+**With Image Analysis**:
+- Upload a photo of handwritten notes: "What does this say?"
+- Upload a diagram: "Explain this flowchart step by step"
+- Upload a math problem: "Solve this equation and show the steps"
+- Upload a chart: "What are the key insights from this graph?"
 
 **With Web Search**:
 - "Latest developments in AI"
@@ -161,8 +175,11 @@ This application is built specifically to enhance the learning experience for:
 
 ### Real-World Applications
 - Converting static textbooks into interactive Q&A sessions
+- Extracting and understanding text from handwritten notes or photos
+- Analyzing educational diagrams, charts, and visual aids
 - Preparing for exams by querying your notes and study guides
 - Learning new topics with explanations tailored to your preference (concise vs detailed)
+- Getting help with homework from photos of problem sets
 - Staying current with latest research and developments in any field
 - Creating study summaries from lengthy academic papers
 
@@ -197,6 +214,13 @@ These settings can be adjusted based on your specific use case and performance r
 - Vector-based similarity search for finding relevant content
 - Persistent storage for quick access across sessions
 
+**Image Analysis & Vision:**
+- AI-powered image understanding using vision models
+- Support for multiple image formats (PNG, JPG, JPEG, WEBP)
+- Automatic image optimization and resizing
+- Text extraction from visual content
+- Diagram and chart interpretation
+
 **Live Web Search:**
 - Integration with search APIs for real-time data
 - Intelligent query analysis to determine when web search is needed
@@ -215,6 +239,11 @@ These settings can be adjusted based on your specific use case and performance r
 1. Upload a sample document (e.g., textbook chapter)
 2. Ask questions about the content
 3. Verify relevant information is retrieved
+
+### Test Image Analysis
+1. Upload an image (handwritten notes, diagram, or screenshot)
+2. Ask questions about the image content
+3. Verify text extraction and image understanding work correctly
 
 ### Test Web Search
 1. Ask a query with "latest" or "recent"
