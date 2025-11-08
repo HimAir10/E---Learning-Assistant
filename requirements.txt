@@ -1,0 +1,30 @@
+# Core Streamlit
+streamlit
+
+# LangChain Core
+langchain
+langchain-core
+langchain-community
+
+# LLM Providers
+langchain-google-genai
+langchain-openai
+langchain-groq
+
+# Vector Store & Embeddings
+chromadb
+sentence-transformers
+
+# Document Processing
+pypdf
+python-docx
+docx2txt
+
+# Web Search
+requests
+
+# Environment Variables
+python-dotenv
+
+# Text Processing
+tiktoken
