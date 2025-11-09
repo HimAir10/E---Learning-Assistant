@@ -65,6 +65,9 @@ AI_UseCase/
 
 ## 🚀 Installation
 
+You can directly access the whole code from the AI_UseCase.zip file i have uploaded, 
+OR
+
 ### 1. Clone the Repository
 
 ```bash
@@ -72,14 +75,8 @@ git clone <your-repo-url>
 cd AI_UseCase
 ```
 
-### 2. Create Virtual Environment
 
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 3. Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
