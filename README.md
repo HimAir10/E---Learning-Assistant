@@ -62,6 +62,8 @@ AI_UseCase/
 ├── requirements.txt           # Python dependencies
 └── README.md                  # This file
 ```
+## Testing Link
+You can test the application through the direct link of streamlit -- https://himair10-e---learning-assistant-app-wuudea.streamlit.app/
 
 ## 🚀 Installation
 
