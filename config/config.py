@@ -25,10 +25,6 @@ except (ImportError, FileNotFoundError):
 # I have used Gemini 2.0 Flash model as primary llm only, and not used OpenAI and Groq models.
 # And I have used Serper API for web search. 
 
-#Set these api keys in your .env file. 
-#SERPER_API_KEY=83243bb427456c389cdea87cc8421ea3f9ebd4c6
-#GOOGLE_API_KEY=AIzaSyA7tETTV8jQkRyhVMhWn90Ws5PRlyW4MYM
-
 
 
 # Model Configuration
